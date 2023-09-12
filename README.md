@@ -43,8 +43,10 @@ pip install -r requirements.txt
 You can use the script as a command-line tool with the following syntax:
 
 ```sh
-python json-plist-mobileconfig.py input_file [--plist] [--json] [--mobileconfig] [options]
+json-plist-mobileconfig input_file [--plist] [--json] [--mobileconfig] [options]
 ```
+
+(Or not installed via the PyPI package `python ./json-plist-mobileconfig.py`)
 
 #### Arguments
 
@@ -81,6 +83,10 @@ json_data = script_name.convert_to_json(data)
 # Create a mobileconfig file with embedded plist data
 mobileconfig_data = script_name.create_mobileconfig(plist_data, uuid, removal_disallowed, identifier, payload_version, payload_display_name)
 ```
+
+## Credits
+
+[mcxToProfile](https://github.com/timsutton/mcxToProfile) - does something similar, and has a different feature set but relies on external libraries and was harder for me to run
 
 ## License
 
