@@ -3,6 +3,12 @@ import plistlib
 import argparse
 import os
 from uuid import uuid4
+import importlib.metadata
+
+try:
+    __version__ = importlib.metadata.version('json-plist-mobileconfig')
+except importlib.metadata.PackageNotFoundError:
+    __version__ = 'dev'
 
 def read_input_file(input_file):
     """Reads and returns data from the input JSON or plist file."""
@@ -81,7 +87,7 @@ def main():
     parser.add_argument('--identifier', type=str, default='com.example.customsettings', help='Identifier for the mobileconfig file (default is com.example.customsettings)')
     parser.add_argument('--payload-version', type=int, default=1, help='Payload version for the mobileconfig file (default is 1)')
     parser.add_argument('--payload-display-name', type=str, default='Custom Settings', help='Payload display name for the mobileconfig file (default is "Custom Settings")')
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version=f'json-plist-mobileconfig version: {__version__}')
 
     args = parser.parse_args()
 
