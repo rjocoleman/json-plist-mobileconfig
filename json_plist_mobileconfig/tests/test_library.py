@@ -32,7 +32,8 @@ def test_create_mobileconfig():
     identifier = "com.example.customsettings"
     payload_version = 1
     payload_display_name = "Custom Settings"
-    mobileconfig_data = create_mobileconfig(plist_data, uuid, removal_disallowed, identifier, payload_version, payload_display_name)
+    domain = "com.example"
+    mobileconfig_data = create_mobileconfig(plist_data, uuid, removal_disallowed, identifier, payload_version, payload_display_name, domain)
     assert b"123e4567-e89b-12d3-a456-426614174000" in mobileconfig_data
     assert b"com.example.customsettings" in mobileconfig_data
     assert b"Custom Settings" in mobileconfig_data

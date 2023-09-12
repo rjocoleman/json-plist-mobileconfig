@@ -29,12 +29,12 @@ def test_cli_json_to_mobileconfig(test_data_dir):
         input_file = test_data_dir / 'test_data.json'
         output_file = Path(temp_dir) / 'test_data.mobileconfig'
 
-        subprocess.run(['python', '-m', 'json_plist_mobileconfig.converter', str(input_file), '--mobileconfig', '--output-dir', temp_dir])
+        subprocess.run(['python', '-m', 'json_plist_mobileconfig.converter', str(input_file), '--mobileconfig', '--domain', 'com.example', '--output-dir', temp_dir])
 
         assert output_file.exists()
 
         with output_file.open('rb') as f:
             data = plistlib.load(f)
-            assert data['PayloadContent'][0]['PayloadContent']['com.apple.applicationaccess']['Forced'][0]['mcx_preference_settings']['CustomSettings'] == {"key": "value"}
+            assert data['PayloadContent'][0]['PayloadContent']['com.example']['Forced'][0]['mcx_preference_settings'] == {"key": "value"}
 
         output_file.unlink()

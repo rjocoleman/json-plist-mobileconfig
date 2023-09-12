@@ -23,32 +23,35 @@ def convert_to_json(data):
     """Converts plist data to JSON format."""
     return json.dumps(data, indent=4)
 
-def create_mobileconfig(plist_data, uuid, removal_disallowed, identifier, payload_version, payload_display_name):
+def create_mobileconfig(plist_data, uuid, removal_disallowed, identifier, payload_version, payload_display_name, domain):
     """Creates a mobileconfig file with the plist data embedded as Custom Settings."""
     mobileconfig_dict = {
         "PayloadContent": [
             {
-                "PayloadDisplayName": payload_display_name,
-                "PayloadIdentifier": identifier,
-                "PayloadType": "com.apple.ManagedClient.preferences",
-                "PayloadUUID": uuid,
-                "PayloadVersion": payload_version,
-                "PayloadRemovalDisallowed": removal_disallowed,
                 "PayloadContent": {
-                    "com.apple.applicationaccess": {
+                    domain: {
                         "Forced": [
                             {
-                                "mcx_preference_settings": {
-                                    "CustomSettings": plistlib.loads(plist_data)
-                                }
+                                "mcx_preference_settings": plistlib.loads(plist_data)
                             }
                         ]
                     }
-                }
+                },
+                "PayloadEnabled": True,
+                "PayloadType": "com.apple.ManagedClient.preferences",
+                "PayloadVersion": payload_version,
+                "PayloadUUID": uuid,
+                "PayloadIdentifier": identifier,
             }
-        ]
+        ],
+        "PayloadDisplayName": payload_display_name,
+        "PayloadDescription": f"Custom Settings for {domain}",
+        "PayloadIdentifier": identifier,
+        "PayloadRemovalDisallowed": removal_disallowed,
+        "PayloadUUID": uuid,
+        "PayloadVersion": payload_version,
     }
-    return plistlib.dumps(mobileconfig_dict, fmt=plistlib.FMT_BINARY)
+    return plistlib.dumps(mobileconfig_dict, fmt=plistlib.FMT_XML)
 
 def write_to_file(data, output_file):
     """Writes data to a file."""
@@ -72,6 +75,7 @@ def main():
     parser.add_argument('--plist', action='store_true', help='Output as plist file')
     parser.add_argument('--json', action='store_true', help='Output as JSON file')
     parser.add_argument('--mobileconfig', action='store_true', help='Output as mobileconfig file with embedded plist data')
+    parser.add_argument('--domain', type=str, required=False, help='The domain for the settings to apply to in mobileconfig mode (no default value)')
     parser.add_argument('--uuid', type=str, default=str(uuid4()), help='UUID for the mobileconfig file (a new UUID will be generated if not specified)')
     parser.add_argument('--removal-disallowed', action='store_true', default=False, help='Disallow removal of the mobileconfig file (default is false)')
     parser.add_argument('--identifier', type=str, default='com.example.customsettings', help='Identifier for the mobileconfig file (default is com.example.customsettings)')
@@ -88,6 +92,9 @@ def main():
     try:
         # Read the input file (JSON or plist)
         data = read_input_file(args.input_file)
+
+        if args.mobileconfig and not args.domain:
+            parser.error("--mobileconfig requires --domain")
 
         output_dir = args.output_dir
         if not os.path.exists(output_dir):
@@ -110,7 +117,7 @@ def main():
         # Create mobileconfig file with embedded plist data if --mobileconfig flag is specified
         if args.mobileconfig:
             plist_data = convert_to_plist(data)
-            mobileconfig_data = create_mobileconfig(plist_data, args.uuid, args.removal_disallowed, args.identifier, args.payload_version, args.payload_display_name)
+            mobileconfig_data = create_mobileconfig(plist_data, args.uuid, args.removal_disallowed, args.identifier, args.payload_version, args.payload_display_name, args.domain)
             mobileconfig_output_file = determine_output_filename(args.input_file, '.mobileconfig', output_dir)
             write_to_file(mobileconfig_data, mobileconfig_output_file)
             print(f"Mobileconfig creation successful! Output written to {mobileconfig_output_file}")
